@@ -1,4 +1,4 @@
-# O&L Smart Collateral Platform
+# O&L Smart Collateral Platform!
 
 This project powers the digital collateral engine for Omni & Luci, enabling tokenization and valuation of infrastructure-backed, ESG-aligned assets including:
 
