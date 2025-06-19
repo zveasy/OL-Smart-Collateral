@@ -28,6 +28,17 @@ This project powers the digital collateral engine for Omni & Luci, enabling toke
 
 ---
 
+## Run the API Locally
+
+1. Activate your virtual environment:
+    source venv/bin/activate
+2. Install dependencies:
+    pip install -r requirements.txt
+3. Start the server:
+    uvicorn api_layer.rest_api.server:app --reload
+
+The API will be available at http://127.0.0.1:8000/
+
 ## License
 
 MIT
