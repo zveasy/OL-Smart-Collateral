@@ -39,6 +39,20 @@ This project powers the digital collateral engine for Omni & Luci, enabling toke
 
 The API will be available at http://127.0.0.1:8000/
 
+
+## 🧪 Example Requests
+
+### Mint a New Asset
+
+```http
+POST /mint
+Content-Type: application/json
+
+{
+  "to_address": "0x1234567890abcdef1234567890abcdef12345678",
+  "token_id": "1",
+  "token_uri": "https://your-metadata-uri.com/asset1.json"
+}
 ## License
 
 MIT

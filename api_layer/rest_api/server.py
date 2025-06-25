@@ -1,7 +1,7 @@
 # api_layer/rest_api/server.py
 
 from fastapi import FastAPI, Body, HTTPException, status
-from .kaleido_client import mint_nft
+from .kaleido_client import mint_nft, owner_of, token_uri, tokens_by_owner
 from .utils import is_valid_eth_address
 
 app = FastAPI(
