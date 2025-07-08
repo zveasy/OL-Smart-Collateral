@@ -1,4 +1,7 @@
 import re
+import hashlib
+
+
 
 def is_valid_eth_address(address: str) -> bool:
     return bool(re.fullmatch(r"0x[a-fA-F0-9]{40}", address))
@@ -19,4 +22,11 @@ def to_checksum(addr: str) -> str:
     """
     if not is_valid_eth_address(addr):
         raise ValueError(f"Invalid ethereum address: {addr}")
-    return Web3.to_checksum_address(addr)
+
+    address = addr.lower().replace("0x", "")
+    digest = hashlib.sha3_256(address.encode()).hexdigest()
+    checksum = "0x" + "".join(
+        c.upper() if int(digest[i], 16) >= 8 else c
+        for i, c in enumerate(address)
+    )
+    return checksum
