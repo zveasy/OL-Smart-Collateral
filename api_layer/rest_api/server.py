@@ -2,7 +2,8 @@
 
 from fastapi import FastAPI, Body, HTTPException, status
 from .kaleido_client import mint_nft, owner_of, token_uri, tokens_by_owner
-from .utils import is_valid_eth_address
+from .utils import is_valid_eth_address, is_valid_uri
+from pydantic import BaseModel  
 
 app = FastAPI(
     title="O&L Smart Collateral API",
@@ -112,6 +113,39 @@ def transfer_asset(
     Transfer an NFT from one address to another.
     """
     return transfer_from(from_address, to_address, token_id)
+
+class MintRequest(BaseModel):
+    to_address: str
+    token_id: int
+    amount: int = 1
+    token_uri: str
+
+# ────────────  Routes  ────────────
+@app.post("/carbon/mint")
+def carbon_mint(req: MintRequest):
+    # 1) Validate inputs
+    if not is_valid_eth_address(req.to_address):
+        raise HTTPException(status_code=422, detail="Invalid to_address")
+    if not is_valid_token_id(req.token_id):
+        raise HTTPException(status_code=422, detail="Invalid token_id")
+    if not is_valid_uri(req.token_uri):
+        raise HTTPException(status_code=422, detail="Invalid token_uri")
+
+    # 2) Convert to checksum address
+    to_addr = to_checksum(req.to_address)
+
+    # 3) Call chain helper
+    try:
+        result = mint_nft(
+            to_address=to_addr,
+            token_id=req.token_id,
+            amount=req.amount,
+            token_uri=req.token_uri,
+        )
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    return {"status": "success", "tx": result}
 
 
    ## return result

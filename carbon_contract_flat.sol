@@ -4679,12 +4679,22 @@ contract OLCarbonCredit is ERC1155, AccessControl {
        Constructor
        ────────────────────────────────────────────────────── */
     constructor(string memory baseURI) ERC1155(baseURI) {
-        _setupRole(DEFAULT_ADMIN_ROLE, msg.sender);
-        _setupRole(ADMIN_ROLE,           msg.sender);
-        _setupRole(MINTER_ROLE,          msg.sender);
-        _setupRole(BURNER_ROLE,          msg.sender);
+        _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
+        _grantRole(ADMIN_ROLE,           msg.sender);
+        _grantRole(MINTER_ROLE,          msg.sender);
+        _grantRole(BURNER_ROLE,          msg.sender);
     }
 
+    // ───── *** REQUIRED OVERRIDE *** ─────
+    function supportsInterface(bytes4 interfaceId)
+        public
+        view
+        override(ERC1155, AccessControl)
+        returns (bool)
+    {
+        return super.supportsInterface(interfaceId);
+    }
+    
     /* ──────────────────────────────────────────────────────
        Admin — set base URI
        ────────────────────────────────────────────────────── */

@@ -12,3 +12,11 @@ def is_valid_token_id(token_id) -> bool:
 
 def is_valid_uri(uri: str) -> bool:
     return uri.startswith("http://") or uri.startswith("https://")
+
+def to_checksum(addr: str) -> str:
+    """
+    Convert to EIP-55 checksum, raising ValueError if invalid.
+    """
+    if not is_valid_eth_address(addr):
+        raise ValueError(f"Invalid ethereum address: {addr}")
+    return Web3.to_checksum_address(addr)

@@ -65,3 +65,8 @@ def test_owner_of_not_found(monkeypatch):
     response = client.get("/ownerOf/9999")
     assert response.status_code == 404
     assert "Kaleido error" in response.text
+
+def test_address_validation():
+    assert is_valid_eth_address("0x2810f346088b6f9638a39b869a929e6eafb73398")
+    assert is_valid_eth_address("0x2810F346088B6F9638A39B869A929E6eAFb73398")
+    assert not is_valid_eth_address("0xGARBAGE")
