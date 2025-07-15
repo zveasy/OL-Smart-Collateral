@@ -1,5 +1,5 @@
 import pytest
-from api_layer.rest_api import utils
+from api_layer import utils
 
 
 def test_is_valid_eth_address():
