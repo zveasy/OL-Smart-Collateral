@@ -1,0 +1,14 @@
+{
+  "name": "O&L Green Bond 2025-1",
+  "issuer": "Omni & Luci LLC",
+  "isin": "US1234567890",
+  "currency": "USD",
+  "faceValue": "1000000.00",
+  "couponRate": 3.75,
+  "couponFrequency": "SEMI_ANNUAL",
+  "issueDate": "2025-07-15",
+  "maturity": "2026-07-15",
+  "esgScore": 85,
+  "carbonOffsetTons": "250.0000",
+  "metadataVersion": "1.0.0"
+}
