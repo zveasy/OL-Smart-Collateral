@@ -15,7 +15,7 @@ def test_bond_metadata_happy():
         isin="US1234567890",
         currency="USD",
         faceValue="1000000.00",
-        couponRateBps=375,
+        couponRate=3.75,
         #couponFrequency="SEMI_ANNUAL",
         couponFrequency=Frequency.SEMI_ANNUAL,
         issueDate=date(2025, 7, 15),
@@ -37,10 +37,10 @@ def test_bond_metadata_bad_currency():
             issuer="O&L",
             currency="USDX",                    # <<< invalid
             faceValue="1000.00",
-            couponRateBps=100,
+            couponRate=1.0,
             couponFrequency="ANNUAL",
-            issueDate=date(2025, 01, 01),
-            maturity=date(2026, 01, 01),
+            issueDate=date(2025, 1, 1),
+            maturity=date(2026, 1, 1),
             esgScore=75,
             isin="US1234567890",    
             carbonOffsetTons="250.0000",
@@ -56,11 +56,12 @@ def test_bond_metadata_maturity_before_issue():
             issuer="O&L",
             currency="USD",
             faceValue="1000.00",
-            couponRateBps=100,
+            couponRate=100,
             couponFrequency="ANNUAL",
             issueDate="2026-01-01",
             maturityDate="2025-12-31",          # <<< before issueDate
             esgScore=80,
+            isin="US1234567890",
         )
     assert "maturityDate" in str(exc.value)
 
@@ -73,7 +74,7 @@ def test_bond_metadata_bad_coupon_freq():
             issuer="O&L",
             currency="USD",
             faceValue="1000.00",
-            couponRateBps=100,
+            couponRate=1.0,
             couponFrequency="MONTHLYY",         # <<< typo
             issueDate="2025-01-01",
             maturityDate="2026-01-01",
