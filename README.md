@@ -1,58 +1,95 @@
-# O&L Smart Collateral Platform!
+# O&L Smart Collateral Platform
 
-This project powers the digital collateral engine for Omni & Luci, enabling tokenization and valuation of infrastructure-backed, ESG-aligned assets including:
+O&L Smart Collateral powers tokenization and lifecycle operations for ESG-aligned assets such as:
 
 - Carbon credits
-- Renewable infrastructure
+- Renewable infrastructure assets
 - Green bonds
 
-## Key Modules
+## Repository Overview
 
-- `tokenization_engine/` – Converts real assets into blockchain tokens (ERC-721 / ERC-1155).
-- `blockchain_integration/` – Smart contracts for ownership, locking, and transfers.
-- `collateral_valuation/` – Valuation models for yield, ESG impact, and carbon credits.
-- `api_layer/` – REST and gRPC services to connect with frontends and banks.
-- `security_compliance/` – Compliance automation and encryption.
+- `api_layer/` - FastAPI service and REST route handlers
+- `contracts/` - Solidity smart contracts
+- `schemas/` - JSON schemas for off-chain metadata
+- `tests/` - Python tests (API, metadata models, hashing, utilities)
+- `test/` - Hardhat Solidity tests
+- `.github/workflows/` - CI pipelines
 
-## Stack (proposed)
+## Prerequisites
 
-- **Backend**: Node.js or Python (FastAPI)
-- **Smart Contracts**: Solidity (Ethereum / Polygon)
-- **DevOps**: Docker, GitHub Actions, AWS
+- Python 3.12+
+- Node.js 20+
+- npm 10+
 
-## Getting Started
+## Local Setup
 
-1. Clone the repo
-2. Install dependencies
-3. Start building 🚀
+### 1) Python API and tests
 
----
+```bash
+python3 -m pip install -r requirements.txt -r requirements-dev.txt
+```
 
-## Run the API Locally
+Run API locally:
 
-1. Activate your virtual environment:
-    source venv/bin/activate
-2. Install dependencies:
-    pip install -r requirements.txt
-3. Start the server:
-    uvicorn api_layer.rest_api.server:app --reload
+```bash
+uvicorn api_layer.rest_api.server:app --reload
+```
 
-The API will be available at http://127.0.0.1:8000/
+Run Python tests:
 
+```bash
+python3 -m pytest
+```
 
-## 🧪 Example Requests
+### 2) Solidity toolchain and tests
 
-### Mint a New Asset
+```bash
+npm ci
+```
+
+Compile contracts:
+
+```bash
+npm run compile:solidity
+```
+
+Run Solidity tests:
+
+```bash
+npm run test:solidity
+```
+
+## REST API Quick Reference
+
+Base URL: `http://127.0.0.1:8000`
+
+All carbon endpoints are under the `/carbon` prefix:
+
+- `POST /carbon/mint`
+- `POST /carbon/retire`
+- `GET /carbon/owner/{token_id}`
+- `GET /carbon/uri/{token_id}`
+- `GET /carbon/balance/{owner}/{token_id}`
+- `GET /carbon/tokens/{owner}`
+- `POST /carbon/transfer`
+- `GET /health`
+
+See `docs/api_reference.md` for request/response details.
+
+### Example: mint carbon credits
 
 ```http
-POST /mint
+POST /carbon/mint
 Content-Type: application/json
 
 {
   "to_address": "0x1234567890abcdef1234567890abcdef12345678",
-  "token_id": "1",
+  "token_id": 1,
+  "amount": 1,
   "token_uri": "https://your-metadata-uri.com/asset1.json"
 }
+```
+
 ## License
 
 MIT
