@@ -21,7 +21,9 @@ if [[ "${python_version}" != "3.12" ]]; then
 fi
 
 if [[ "${node_major}" != "20" ]]; then
-  echo "Warning: expected Node.js 20.x, found $(node -v)" >&2
+  echo "Error: expected Node.js 20.x, found $(node -v)" >&2
+  echo "Please switch to Node 20 (for example: nvm use 20) and re-run setup:env." >&2
+  exit 1
 fi
 
 echo "==> Installing Python dependencies"
