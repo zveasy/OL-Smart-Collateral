@@ -37,6 +37,14 @@ npm run verify:env
 
 ### 1) Python API and tests
 
+Create local env file from template:
+
+```bash
+cp .env.example .env
+```
+
+Then set real values in `.env` (never commit secrets).
+
 ```bash
 python3 -m pip install -r requirements.txt -r requirements-dev.txt
 ```
@@ -105,3 +113,7 @@ Content-Type: application/json
 ## License
 
 MIT
+
+## Security
+
+See `SECURITY.md` for secrets handling and vulnerability reporting.
