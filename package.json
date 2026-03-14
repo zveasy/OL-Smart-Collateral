@@ -2,7 +2,7 @@
   "private": true,
   "scripts": {
     "compile:solidity": "hardhat compile --config hardhat.config.js",
-    "test:solidity": "hardhat test --config hardhat.config.js \"test/**/*.js\"",
+    "test:solidity": "hardhat test --config hardhat.config.js",
     "size:contracts": "hardhat size-contracts --config hardhat.config.js"
   },
   "devDependencies": {
