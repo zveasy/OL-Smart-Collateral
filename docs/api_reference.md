@@ -2,6 +2,21 @@
 
 Base URL: `http://127.0.0.1:8000`
 
+## Authentication and authorization
+
+All `/carbon/*` routes require bearer authentication.
+
+Header:
+
+```http
+Authorization: Bearer <token>
+```
+
+Role model:
+
+- `reader`: read-only operations
+- `admin`: write operations (`mint`, `retire`, `transfer`)
+
 ## Health
 
 ### `GET /health`
@@ -16,6 +31,18 @@ Response:
 }
 ```
 
+### `GET /health/live`
+
+Liveness endpoint for runtime/process health.
+
+### `GET /health/ready`
+
+Readiness endpoint for dependency/config readiness.
+
+### `GET /metrics`
+
+Prometheus-style metrics output.
+
 ## Carbon Credit Routes
 
 All routes are prefixed with `/carbon`.
@@ -23,6 +50,8 @@ All routes are prefixed with `/carbon`.
 ### `POST /carbon/mint`
 
 Mint new carbon credits.
+
+Requires `admin` token and `Idempotency-Key` header.
 
 Request body:
 
@@ -38,6 +67,8 @@ Request body:
 ### `POST /carbon/retire`
 
 Retire existing carbon credits.
+
+Requires `admin` token and `Idempotency-Key` header.
 
 Request body:
 
@@ -67,6 +98,8 @@ List token IDs held by an address.
 ### `POST /carbon/transfer`
 
 Transfer token units between addresses.
+
+Requires `admin` token and `Idempotency-Key` header.
 
 Request body:
 

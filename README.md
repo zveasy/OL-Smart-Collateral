@@ -93,8 +93,26 @@ All carbon endpoints are under the `/carbon` prefix:
 - `GET /carbon/tokens/{owner}`
 - `POST /carbon/transfer`
 - `GET /health`
+- `GET /health/live`
+- `GET /health/ready`
+- `GET /metrics`
 
 See `docs/api_reference.md` for request/response details.
+
+### Authentication
+
+All `/carbon/*` endpoints require `Authorization: Bearer <token>`.
+
+- `reader` token: read-only routes
+- `admin` token: write routes (`mint`, `retire`, `transfer`)
+
+Configure role-token mapping using `API_TOKENS` in environment variables.
+
+### Idempotency for write routes
+
+`POST /carbon/mint`, `POST /carbon/retire`, and `POST /carbon/transfer` require:
+
+`Idempotency-Key: <unique-key>`
 
 ### Example: mint carbon credits
 
@@ -117,3 +135,8 @@ MIT
 ## Security
 
 See `SECURITY.md` for secrets handling and vulnerability reporting.
+
+## Operations and governance
+
+- Release governance: `docs/release_governance.md`
+- Incident response: `docs/incident_runbook.md`

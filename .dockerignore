@@ -1,0 +1,12 @@
+.git
+.github
+.pytest_cache
+__pycache__
+*.py[cod]
+node_modules
+cache
+artifacts
+coverage
+.env
+.env.*
+!.env.example
