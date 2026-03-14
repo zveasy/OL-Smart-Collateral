@@ -14,7 +14,7 @@ if ! command -v node >/dev/null 2>&1; then
 fi
 
 python_version="$(python3 -c 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}")')"
-node_major="$(node -p 'process.versions.node.split(\".\")[0]')"
+node_major="$(node -p 'process.versions.node.split(".")[0]')"
 
 if [[ "${python_version}" != "3.12" ]]; then
   echo "Warning: expected Python 3.12, found ${python_version}" >&2
