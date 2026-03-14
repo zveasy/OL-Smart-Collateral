@@ -1,58 +1,142 @@
-# O&L Smart Collateral Platform!
+# O&L Smart Collateral Platform
 
-This project powers the digital collateral engine for Omni & Luci, enabling tokenization and valuation of infrastructure-backed, ESG-aligned assets including:
+O&L Smart Collateral powers tokenization and lifecycle operations for ESG-aligned assets such as:
 
 - Carbon credits
-- Renewable infrastructure
+- Renewable infrastructure assets
 - Green bonds
 
-## Key Modules
+## Repository Overview
 
-- `tokenization_engine/` – Converts real assets into blockchain tokens (ERC-721 / ERC-1155).
-- `blockchain_integration/` – Smart contracts for ownership, locking, and transfers.
-- `collateral_valuation/` – Valuation models for yield, ESG impact, and carbon credits.
-- `api_layer/` – REST and gRPC services to connect with frontends and banks.
-- `security_compliance/` – Compliance automation and encryption.
+- `api_layer/` - FastAPI service and REST route handlers
+- `contracts/` - Solidity smart contracts
+- `schemas/` - JSON schemas for off-chain metadata
+- `tests/` - Python tests (API, metadata models, hashing, utilities)
+- `test/` - Hardhat Solidity tests
+- `.github/workflows/` - CI pipelines
 
-## Stack (proposed)
+## Prerequisites
 
-- **Backend**: Node.js or Python (FastAPI)
-- **Smart Contracts**: Solidity (Ethereum / Polygon)
-- **DevOps**: Docker, GitHub Actions, AWS
+- Python 3.12+
+- Node.js 20+
+- npm 10+
 
-## Getting Started
+## Local Setup
 
-1. Clone the repo
-2. Install dependencies
-3. Start building 🚀
+### Fast setup for cloud agents
 
----
+```bash
+npm run setup:env
+```
 
-## Run the API Locally
+Verify everything is ready:
 
-1. Activate your virtual environment:
-    source venv/bin/activate
-2. Install dependencies:
-    pip install -r requirements.txt
-3. Start the server:
-    uvicorn api_layer.rest_api.server:app --reload
+```bash
+npm run verify:env
+```
 
-The API will be available at http://127.0.0.1:8000/
+### 1) Python API and tests
 
+Create local env file from template:
 
-## 🧪 Example Requests
+```bash
+cp .env.example .env
+```
 
-### Mint a New Asset
+Then set real values in `.env` (never commit secrets).
+
+```bash
+python3 -m pip install -r requirements.txt -r requirements-dev.txt
+```
+
+Run API locally:
+
+```bash
+uvicorn api_layer.rest_api.server:app --reload
+```
+
+Run Python tests:
+
+```bash
+python3 -m pytest
+```
+
+### 2) Solidity toolchain and tests
+
+```bash
+npm ci
+```
+
+Compile contracts:
+
+```bash
+npm run compile:solidity
+```
+
+Run Solidity tests:
+
+```bash
+npm run test:solidity
+```
+
+## REST API Quick Reference
+
+Base URL: `http://127.0.0.1:8000`
+
+All carbon endpoints are under the `/carbon` prefix:
+
+- `POST /carbon/mint`
+- `POST /carbon/retire`
+- `GET /carbon/owner/{token_id}`
+- `GET /carbon/uri/{token_id}`
+- `GET /carbon/balance/{owner}/{token_id}`
+- `GET /carbon/tokens/{owner}`
+- `POST /carbon/transfer`
+- `GET /health`
+- `GET /health/live`
+- `GET /health/ready`
+- `GET /metrics`
+
+See `docs/api_reference.md` for request/response details.
+
+### Authentication
+
+All `/carbon/*` endpoints require `Authorization: Bearer <token>`.
+
+- `reader` token: read-only routes
+- `admin` token: write routes (`mint`, `retire`, `transfer`)
+
+Configure role-token mapping using `API_TOKENS` in environment variables.
+
+### Idempotency for write routes
+
+`POST /carbon/mint`, `POST /carbon/retire`, and `POST /carbon/transfer` require:
+
+`Idempotency-Key: <unique-key>`
+
+### Example: mint carbon credits
 
 ```http
-POST /mint
+POST /carbon/mint
 Content-Type: application/json
 
 {
   "to_address": "0x1234567890abcdef1234567890abcdef12345678",
-  "token_id": "1",
+  "token_id": 1,
+  "amount": 1,
   "token_uri": "https://your-metadata-uri.com/asset1.json"
 }
+```
+
 ## License
 
 MIT
+
+## Security
+
+See `SECURITY.md` for secrets handling and vulnerability reporting.
+
+## Operations and governance
+
+- Release governance: `docs/release_governance.md`
+- Incident response: `docs/incident_runbook.md`

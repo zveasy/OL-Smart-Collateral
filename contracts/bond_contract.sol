@@ -61,11 +61,11 @@ contract OLBondERC721 is ERC721URIStorage, AccessControl {
         return _metaHash[tokenId];
     }
 
-    // ---- required override (ERC721 + AccessControl) ----
+    // ---- required override (ERC721URIStorage + AccessControl) ----
     function supportsInterface(bytes4 interfaceId)
         public
         view
-        override(ERC721, AccessControl)
+        override(ERC721URIStorage, AccessControl)
         returns (bool)
     {
         return super.supportsInterface(interfaceId);

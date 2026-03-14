@@ -16,8 +16,19 @@ jobs:
       - name: Build
         run: docker build -t ol-smart-collateral-api:ci .
 
-      - name: Test
-        run: docker run --rm ol-smart-collateral-api:ci pytest -q
+      - name: Smoke test container health endpoints
+        run: |
+          docker run -d --name ol-api-smoke -p 8000:8000 \
+            -e KALEIDO_API_URL=https://example.invalid/gateway \
+            -e KALEIDO_API_KEY=dummy-key \
+            -e CARBON_CONTRACT_ADDRESS=0x2810f346088b6f9638a39b869a929e6eafb73398 \
+            -e ADMIN_ADDRESS=0x2810f346088b6f9638a39b869a929e6eafb73398 \
+            -e API_TOKENS=admin:dummy-admin,reader:dummy-reader \
+            ol-smart-collateral-api:ci
+          sleep 5
+          curl --fail http://127.0.0.1:8000/health/live
+          curl --fail http://127.0.0.1:8000/health/ready
+          docker rm -f ol-api-smoke
 
       # Optional publish to GHCR
       # - name: Login to GHCR

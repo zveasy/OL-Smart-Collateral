@@ -1,13 +1,18 @@
-import pytest
-import sys
+import os
 import types
-# tests/test_api.py
+import sys
+
+import pytest
 from fastapi.testclient import TestClient
-from api_layer.rest_api.server import app           # only need the app
-from api_layer.rest_api import kaleido_client 
-from fastapi import HTTPException                    # use FastAPI source
-from api_layer.rest_api.carbon_routes import MintRequest  # actual model module
-from api_layer.rest_api import server
+
+# Ensure runtime/env configuration is present before app import.
+os.environ.setdefault("KALEIDO_API_URL", "https://example.invalid/gateway")
+os.environ.setdefault("KALEIDO_API_KEY", "test-kaleido-key")
+os.environ.setdefault("CARBON_CONTRACT_ADDRESS", "0x2810f346088b6f9638a39b869a929e6eafb73398")
+os.environ.setdefault("ADMIN_ADDRESS", "0x2810f346088b6f9638a39b869a929e6eafb73398")
+os.environ.setdefault("API_TOKENS", "admin:test-admin-token,reader:test-reader-token")
+
+from api_layer.rest_api.server import app
 from api_layer.rest_api import carbon_routes
 
 client = TestClient(app)
@@ -18,120 +23,114 @@ kaleido_stub = types.SimpleNamespace(
     token_uri=lambda *a, **k: None,
     tokens_by_owner=lambda *a, **k: None,
 )
-sys.modules['api_layer.rest_api.kaleido_client'] = kaleido_stub
+sys.modules["api_layer.rest_api.kaleido_client"] = kaleido_stub
+
+READER_HEADERS = {"Authorization": "Bearer test-reader-token"}
 
 
-def test_mint_success(monkeypatch):
-    def mock_mint(to_address, token_id, amount, token_uri):
-        #return {"tokenId": token_id}
-         return {"status": "success", "tokenId": token_id}
-    monkeypatch.setattr(carbon_routes, "mint_nft", mock_mint)
+def _admin_headers(key: str) -> dict[str, str]:
+    return {
+        "Authorization": "Bearer test-admin-token",
+        "Idempotency-Key": key,
+    }
 
-    # resp = server.mint_asset(
-    #     to_address="0x1234567890abcdef1234567890abcdef12345678",
-    #     token_id="1",
-    #     token_uri="https://test.com/1.json",
-    # )
-    payload = {
+
+def _mint_payload():
+    return {
         "to_address": "0x1234567890abcdef1234567890abcdef12345678",
         "token_id": 1,
         "amount": 1,
         "token_uri": "https://test.com/1.json",
     }
-    resp = client.post("/carbon/mint", json=payload) 
+
+
+def test_mint_success(monkeypatch):
+    def mock_mint(to_address, token_id, amount, token_uri):
+        return {"status": "success", "tokenId": token_id}
+
+    monkeypatch.setattr(carbon_routes, "mint_nft", mock_mint)
+    resp = client.post("/carbon/mint", json=_mint_payload(), headers=_admin_headers("mint-success"))
     assert resp.status_code == 200
     assert resp.json()["status"] == "success"
-    #assert resp["tokenId"] == "1"
 
 
 def test_mint_invalid_address(monkeypatch):
-    # with pytest.raises(server.HTTPException):
-    #     server.mint_asset("bad", "1", "https://test.com/1.json")
-    monkeypatch.setattr(
-        carbon_routes, "mint_nft",
-        lambda *a, **k: {"status": "success"}
-    )
-
-    bad_payload = {
-        "to_address": "bad",               # invalid ETH address
-        "token_id": 1,
-        "amount": 1,
-        "token_uri": "https://test.com/1.json"
-    }
-    resp = client.post("/carbon/mint", json=bad_payload)
-    assert resp.status_code == 422                    
+    monkeypatch.setattr(carbon_routes, "mint_nft", lambda *a, **k: {"status": "success"})
+    payload = _mint_payload()
+    payload["to_address"] = "bad"
+    resp = client.post("/carbon/mint", json=payload, headers=_admin_headers("mint-invalid-address"))
+    assert resp.status_code == 422
 
 
 def test_owner_of_success(monkeypatch):
-    def mock_owner(token_id):
-        return {"owner": "0x1234567890abcdef1234567890abcdef12345678"}
-    monkeypatch.setattr(carbon_routes, "owner_of", mock_owner)
-    resp = client.get("/carbon/owner/1")              # HTTP call
+    monkeypatch.setattr(
+        carbon_routes,
+        "owner_of",
+        lambda token_id: {"owner": "0x1234567890abcdef1234567890abcdef12345678"},
+    )
+    resp = client.get("/carbon/owner/1", headers=READER_HEADERS)
     assert resp.status_code == 200
     assert resp.json()["owner"].lower() == "0x1234567890abcdef1234567890abcdef12345678"
 
-    # resp = server.get_owner("1")
-    # assert resp["owner"].startswith("0x")
 
-
-def test_owner_of_not_found(monkeypatch):
+def test_owner_of_not_found_is_sanitized(monkeypatch):
     def mock_owner(token_id):
         import requests
-        resp = requests.Response()
-        resp.status_code = 404
-        resp._content = b"Token not found"
-        raise requests.HTTPError(response=resp)
-        return {"error": "Token not found"}
+
+        response = requests.Response()
+        response.status_code = 404
+        response._content = b"Token not found"
+        raise requests.HTTPError(response=response)
+
     monkeypatch.setattr(carbon_routes, "owner_of", mock_owner)
-
-    resp = client.get("/carbon/owner/999")               # ← HTTP call
-    assert resp.status_code == 502  
-    # with pytest.raises(server.HTTPException) as exc:
-    #     server.get_owner("999")
-    # assert exc.value.status_code == 404
-
-
-def test_carbon_mint_success(monkeypatch):
-    def mock_mint(to_address, token_id, amount, token_uri):
-        return {"status": "success", "hash": "0xabc"}
-        #return {"hash": "0xabc"}
-    monkeypatch.setattr(carbon_routes, "mint_nft", mock_mint)
-    # req = server.MintRequest(
-    #     to_address="0x2810f346088b6f9638a39b869a929e6eafb73398",
-    #     token_id=1,
-    #     token_uri="http://example.com/meta.json",
-    # )
-    payload = {
-        "to_address": "0x2810f346088b6f9638a39b869a929e6eafb73398",
-        "token_id": 1,
-        "amount": 1,
-        "token_uri": "http://example.com/meta.json",
-    }
-    resp = client.post("/carbon/mint", json=payload)
-    assert resp.status_code == 200
-    assert resp.json()["hash"] == "0xabc"
-    # resp = server.carbon_mint(req)
-    # assert resp["status"] == "success"
+    resp = client.get("/carbon/owner/999", headers=READER_HEADERS)
+    assert resp.status_code == 502
+    assert resp.json()["detail"] == "Upstream service error"
 
 
 def test_carbon_mint_invalid_token_id(monkeypatch):
-    monkeypatch.setattr(
-        carbon_routes, "mint_nft",
-        lambda *a, **k: {"status": "success"}
-    )
-    # req = server.MintRequest(
-    #     to_address="0x2810f346088b6f9638a39b869a929e6eafb73398",
-    #     token_id=-1,
-    #     token_uri="http://example.com/meta.json",
-    # )
-    bad_payload = {
-        "to_address": "0x2810f346088b6f9638a39b869a929e6eafb73398",
-        "token_id": -1,                     # invalid
-        "amount": 1,
-        "token_uri": "http://example.com/meta.json"
-    }
-    resp = client.post("/carbon/mint", json=bad_payload)
+    monkeypatch.setattr(carbon_routes, "mint_nft", lambda *a, **k: {"status": "success"})
+    payload = _mint_payload()
+    payload["token_id"] = -1
+    resp = client.post("/carbon/mint", json=payload, headers=_admin_headers("mint-invalid-token-id"))
     assert resp.status_code == 422
-    # with pytest.raises(server.HTTPException) as exc:
-    #     server.carbon_mint(req)
-    # assert exc.value.status_code == 422
+
+
+def test_missing_bearer_token_rejected():
+    resp = client.get("/carbon/owner/1")
+    assert resp.status_code == 401
+
+
+def test_insufficient_role_rejected():
+    resp = client.post("/carbon/mint", json=_mint_payload(), headers={"Authorization": "Bearer test-reader-token", "Idempotency-Key": "idempotent-key-2"})
+    assert resp.status_code == 403
+
+
+def test_missing_idempotency_key_rejected_for_writes():
+    resp = client.post(
+        "/carbon/mint",
+        json=_mint_payload(),
+        headers={"Authorization": "Bearer test-admin-token"},
+    )
+    assert resp.status_code == 400
+
+
+def test_idempotent_replay(monkeypatch):
+    calls = {"n": 0}
+
+    def mock_mint(*args, **kwargs):
+        calls["n"] += 1
+        return {"status": "success", "tokenId": 1}
+
+    monkeypatch.setattr(carbon_routes, "mint_nft", mock_mint)
+
+    headers = {
+        "Authorization": "Bearer test-admin-token",
+        "Idempotency-Key": "same-key",
+    }
+    first = client.post("/carbon/mint", json=_mint_payload(), headers=headers)
+    second = client.post("/carbon/mint", json=_mint_payload(), headers=headers)
+    assert first.status_code == 200
+    assert second.status_code == 200
+    assert second.headers.get("X-Idempotent-Replay") == "true"
+    assert calls["n"] == 1
