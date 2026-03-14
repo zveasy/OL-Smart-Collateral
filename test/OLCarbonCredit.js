@@ -4,7 +4,7 @@ const { expect } = require("chai");
 describe("OLCarbonCredit", function () {
   async function deployFixture() {
     const [admin, minter, burner, holder] = await ethers.getSigners();
-    const Factory = await ethers.getContractFactory("OLCarbonCredit");
+    const Factory = await ethers.getContractFactory("contracts/carbon_contract.sol:OLCarbonCredit");
     const carbon = await Factory.deploy("ipfs://carbon/");
 
     await carbon.grantRole(await carbon.MINTER_ROLE(), minter.address);
