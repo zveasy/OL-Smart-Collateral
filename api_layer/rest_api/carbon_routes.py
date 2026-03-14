@@ -33,10 +33,10 @@ router = APIRouter(prefix="/carbon", tags=["Carbon Credits"])
 
 # ─────────── Pydantic models ───────────
 class MintRequest(BaseModel):
-    to_address: str                         = Field(..., example="0x2810F346088B...")
+    to_address: str                         = Field(..., json_schema_extra={"example": "0x2810F346088B..."})
     token_id  : int                         = Field(..., ge=0)
     amount    : int = Field(1, ge=1)
-    token_uri : str                         = Field(..., example="ipfs://olcarbon/1.json")
+    token_uri : str                         = Field(..., json_schema_extra={"example": "ipfs://olcarbon/1.json"})
 
 class RetireRequest(BaseModel):
     token_id: int = Field(..., ge=0)

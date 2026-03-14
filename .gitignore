@@ -3,6 +3,11 @@ node_modules
 node_modules
 .env
 
+# Python cache / test artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
 # Hardhat files
 /cache
 /artifacts
