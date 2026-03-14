@@ -23,6 +23,18 @@ O&L Smart Collateral powers tokenization and lifecycle operations for ESG-aligne
 
 ## Local Setup
 
+### Fast setup for cloud agents
+
+```bash
+npm run setup:env
+```
+
+Verify everything is ready:
+
+```bash
+npm run verify:env
+```
+
 ### 1) Python API and tests
 
 ```bash

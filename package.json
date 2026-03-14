@@ -1,6 +1,13 @@
 {
   "private": true,
+  "engines": {
+    "node": ">=20 <21",
+    "npm": ">=10"
+  },
   "scripts": {
+    "setup:env": "bash scripts/bootstrap_cloud_agent_env.sh",
+    "verify:env": "bash scripts/verify_env.sh",
+    "test:all": "python3 -m pytest && npm run test:solidity",
     "compile:solidity": "hardhat compile --config hardhat.config.js",
     "test:solidity": "hardhat test --config hardhat.config.js",
     "size:contracts": "hardhat size-contracts --config hardhat.config.js"
