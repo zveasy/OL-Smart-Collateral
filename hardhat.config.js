@@ -10,6 +10,7 @@ module.exports = {
         enabled: true,
         runs: 200,
       },
+      evmVersion: "cancun",
     },
   },
   // Keep explicit paths so Hardhat behavior is stable across environments.
