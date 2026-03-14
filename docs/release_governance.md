@@ -23,6 +23,15 @@ Enable these rules on `main`:
 - Security scan results archived in CI
 - Deployment change notes (what changed, rollback plan)
 
+## Dependency risk policy
+
+- Production dependency audits must pass with:
+  - `npm audit --omit=dev --audit-level=high`
+  - `pip-audit -r requirements.txt`
+- Full `npm audit` may include development-toolchain advisories (Hardhat ecosystem).
+  These are tracked and must not block production deployment if runtime image and runtime
+  dependencies are unaffected.
+
 ## Production deployment gates
 
 1. All required checks green.
