@@ -9,19 +9,26 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      KALEIDO_API_URL: https://example.kaleido.io
+      KALEIDO_API_KEY: test-key
+      CARBON_CONTRACT_ADDRESS: 0x0000000000000000000000000000000000000000
+      ADMIN_ADDRESS: 0x0000000000000000000000000000000000000001
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Python
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: "3.12"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-          pip install pytest
+          pip install -r requirements-dev.txt
       - name: Run tests
-        run: pytest
+        run: pytest -q
+      - name: Run tests with coverage
+        run: pytest --cov=api_layer --cov-report=term-missing -q
 
 
 

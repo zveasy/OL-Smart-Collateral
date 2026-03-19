@@ -15,5 +15,14 @@ RUN pip install --upgrade pip && pip install -r requirements.txt
 
 COPY . .
 
+# Run as non-root
+RUN adduser --disabled-password --gecos "" appuser && chown -R appuser:appuser /app
+USER appuser
+
 EXPOSE 8000
-CMD ["uvicorn","api_layer.rest_api.server:app","--host","0.0.0.0","--port","8000"]
+
+# Liveness: process responds; readiness (Kaleido) is GET /health/ready
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+    CMD curl -sf http://localhost:8000/health || exit 1
+
+CMD ["uvicorn", "api_layer.rest_api.server:app", "--host", "0.0.0.0", "--port", "8000"]

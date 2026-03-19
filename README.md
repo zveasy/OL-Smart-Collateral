@@ -30,29 +30,56 @@ This project powers the digital collateral engine for Omni & Luci, enabling toke
 
 ## Run the API Locally
 
-1. Activate your virtual environment:
-    source venv/bin/activate
-2. Install dependencies:
-    pip install -r requirements.txt
-3. Start the server:
-    uvicorn api_layer.rest_api.server:app --reload
+1. Copy environment template and set values:
+   ```bash
+   cp .env.example .env
+   # Edit .env with your Kaleido URL, API key, contract address, and admin address.
+   ```
+2. Activate your virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+3. Install dependencies:
+   ```bash
+   pip install -r requirements.txt
+   ```
+4. Start the server:
+   ```bash
+   uvicorn api_layer.rest_api.server:app --reload
+   ```
 
 The API will be available at http://127.0.0.1:8000/
 
+- **Health:** `GET /health` (liveness), `GET /health/ready` (readiness, checks Kaleido).
+- **Docs:** http://127.0.0.1:8000/docs (disabled when `ENVIRONMENT=production` or `DOCS_ENABLED=false`).
+- **Versioned API:** Use `/v1/carbon/...` for the stable versioned API; `/carbon/...` is supported for backward compatibility.
+
+### Optional: REST API key
+
+If you set `API_KEY` in `.env`, all carbon routes (`/v1/carbon/*` and `/carbon/*`) require authentication via:
+
+- Header: `X-API-Key: <your-api-key>`, or
+- Header: `Authorization: Bearer <your-api-key>`
+
+If `API_KEY` is not set, routes are open (suitable for local dev only).
 
 ## 🧪 Example Requests
 
 ### Mint a New Asset
 
 ```http
-POST /mint
+POST /carbon/mint
 Content-Type: application/json
+X-API-Key: your-api-key
 
 {
   "to_address": "0x1234567890abcdef1234567890abcdef12345678",
-  "token_id": "1",
+  "token_id": 1,
+  "amount": 1,
   "token_uri": "https://your-metadata-uri.com/asset1.json"
 }
+```
+
 ## License
 
 MIT

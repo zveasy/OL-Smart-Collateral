@@ -159,6 +159,20 @@ def tokens_by_owner(owner: str) -> Dict[str, Any]:
         params={"owner": to_checksum(owner)},
     )
 
+
+def check_connectivity() -> bool:
+    """
+    Lightweight read-only call to verify Kaleido gateway is reachable.
+    Returns True if gateway responded (including 4xx), False on 5xx or network errors.
+    """
+    try:
+        _call(f"/contracts/{CONTRACT_ADDR}/ownerOf", params={"tokenId": 0})
+        return True
+    except requests.HTTPError as exc:
+        return getattr(exc.response, "status_code", 500) < 500
+    except Exception:
+        return False
+
 def transfer_from(fr: str,
                   to: str,
                   token_id: int,
