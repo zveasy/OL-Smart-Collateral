@@ -30,5 +30,5 @@ def test_hash_is_stable_against_key_order():
 def test_canonical_json_roundtrip():
     m = _sample()
     js = bond_meta_json(m)
-    assert js.count(" ") == 0  # no spaces
+    assert ": " not in js and ", " not in js  # no formatting whitespace
     assert bond_meta_hash(m).startswith("0x")

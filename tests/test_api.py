@@ -1,13 +1,8 @@
-import pytest
 import sys
 import types
 # tests/test_api.py
 from fastapi.testclient import TestClient
 from api_layer.rest_api.server import app           # only need the app
-from api_layer.rest_api import kaleido_client 
-from fastapi import HTTPException                    # use FastAPI source
-from api_layer.rest_api.carbon_routes import MintRequest  # actual model module
-from api_layer.rest_api import server
 from api_layer.rest_api import carbon_routes
 
 client = TestClient(app)

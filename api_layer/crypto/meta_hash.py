@@ -3,7 +3,20 @@ from __future__ import annotations
 import json
 from typing import Any, Mapping
 from pydantic import BaseModel
-from eth_utils import keccak, to_hex
+
+try:
+    from eth_utils import keccak, to_hex
+except ImportError:
+    from Crypto.Hash import keccak as crypto_keccak
+
+    def keccak(*, text: str) -> bytes:
+        digest = crypto_keccak.new(digest_bits=256)
+        digest.update(text.encode("utf-8"))
+        return digest.digest()
+
+    def to_hex(value: bytes) -> str:
+        return "0x" + value.hex()
+
 
 def _canonicalize(obj: Any) -> Any:
     """
@@ -16,6 +29,7 @@ def _canonicalize(obj: Any) -> Any:
     if isinstance(obj, list):
         return [_canonicalize(x) for x in obj]
     return obj
+
 
 def bond_meta_hash(meta: BaseModel | dict) -> str:
     """
@@ -33,6 +47,7 @@ def bond_meta_hash(meta: BaseModel | dict) -> str:
     # No spaces, stable separators, Unicode preserved
     json_str = json.dumps(canon, separators=(",", ":"), ensure_ascii=False)
     return to_hex(keccak(text=json_str))
+
 
 def bond_meta_json(meta: BaseModel | dict) -> str:
     """

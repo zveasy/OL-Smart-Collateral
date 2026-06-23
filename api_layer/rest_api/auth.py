@@ -2,7 +2,8 @@
 API key authentication for /carbon/* routes.
 If API_KEY env is set, requests must provide X-API-Key or Authorization: Bearer <key>.
 """
-from fastapi import Header, HTTPException, Security
+
+from fastapi import HTTPException, Security
 from fastapi.security import APIKeyHeader, HTTPBearer, HTTPAuthorizationCredentials
 
 from api_layer.config import get_api_key

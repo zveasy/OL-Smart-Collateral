@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import time
 import uuid
 
@@ -21,6 +20,7 @@ from api_layer.config import (
 from slowapi.middleware import SlowAPIMiddleware
 
 from api_layer.rest_api.carbon_routes import router as carbon_router
+from api_layer.rest_api.liquidity_routes import router as liquidity_router
 from api_layer.rest_api.rate_limit import (
     limiter,
     RateLimitExceeded,
@@ -30,6 +30,8 @@ from api_layer.rest_api.rate_limit import (
 # Re-export for backwards compatibility
 from fastapi import HTTPException
 from api_layer.rest_api.carbon_routes import MintRequest, RetireRequest
+
+__all__ = ["HTTPException", "MintRequest", "RetireRequest", "app"]
 
 
 @asynccontextmanager
@@ -62,7 +64,13 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=get_cors_origins(),
     allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["Authorization", "Content-Type", "X-API-Key"],
+    allow_headers=[
+        "Authorization",
+        "Content-Type",
+        "X-API-Key",
+        "X-Request-ID",
+        "X-Tenant-ID",
+    ],
 )
 
 # ───────────────────────────────
@@ -107,8 +115,11 @@ app.add_middleware(RequestLogMiddleware)
 # ───────────────────────────────
 # 3. Include API routes (versioned + legacy)
 # ───────────────────────────────
-app.include_router(carbon_router, prefix="/v1")   # versioned: /v1/carbon/...
-app.include_router(carbon_router)                  # legacy: /carbon/...
+app.include_router(carbon_router, prefix="/v1")  # versioned: /v1/carbon/...
+app.include_router(carbon_router)  # legacy: /carbon/...
+app.include_router(liquidity_router, prefix="/v1")
+app.include_router(liquidity_router)
+
 
 # ───────────────────────────────
 # 4. Health endpoints (exempt from rate limit)
@@ -126,6 +137,7 @@ def health_ready():
     """Readiness: app and Kaleido gateway are reachable."""
     from fastapi.responses import JSONResponse
     from api_layer.rest_api.kaleido_client import check_connectivity
+
     if check_connectivity():
         return {"status": "ok", "kaleido": "up"}
     return JSONResponse(

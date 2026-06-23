@@ -42,22 +42,26 @@ from .kaleido_client import (
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/carbon", tags=["Carbon Credits"])
 
+
 # ─────────── Pydantic models ───────────
 class MintRequest(BaseModel):
-    to_address: str                         = Field(..., example="0x2810F346088B...")
-    token_id  : int                         = Field(..., ge=0)
-    amount    : int = Field(1, ge=1)
-    token_uri : str                         = Field(..., example="ipfs://olcarbon/1.json")
+    to_address: str = Field(..., json_schema_extra={"example": "0x2810F346088B..."})
+    token_id: int = Field(..., ge=0)
+    amount: int = Field(1, ge=1)
+    token_uri: str = Field(..., json_schema_extra={"example": "ipfs://olcarbon/1.json"})
+
 
 class RetireRequest(BaseModel):
     token_id: int = Field(..., ge=0)
-    amount  : int = Field(1, ge=1)
+    amount: int = Field(1, ge=1)
+
 
 class TransferRequest(BaseModel):
     from_address: str
-    to_address  : str
-    token_id    : int = Field(..., ge=0)
-    amount      : int = Field(1, ge=1)
+    to_address: str
+    token_id: int = Field(..., ge=0)
+    amount: int = Field(1, ge=1)
+
 
 # ─────────── Helper for consistent error mapping (no upstream leak in response) ───────────
 def _wrap_kaleido(fn, *a, **kw):
@@ -71,7 +75,9 @@ def _wrap_kaleido(fn, *a, **kw):
         )
         raise HTTPException(502, "Upstream service temporarily unavailable")
 
+
 # ─────────── Routes ───────────
+
 
 @router.post("/mint", dependencies=[Depends(verify_api_key)])
 def mint(req: MintRequest):
@@ -81,12 +87,9 @@ def mint(req: MintRequest):
     if not is_valid_uri(req.token_uri):
         raise HTTPException(422, "Invalid token_uri")
     return _wrap_kaleido(
-        mint_nft,
-        to_checksum(req.to_address),
-        req.token_id,
-        req.amount,
-        req.token_uri
+        mint_nft, to_checksum(req.to_address), req.token_id, req.amount, req.token_uri
     )
+
 
 @router.post("/retire", dependencies=[Depends(verify_api_key)])
 def retire(req: RetireRequest):
@@ -95,12 +98,14 @@ def retire(req: RetireRequest):
         raise HTTPException(422, "Invalid token_id")
     return _wrap_kaleido(retire_nft, req.token_id, req.amount)
 
+
 @router.get("/owner/{token_id}", dependencies=[Depends(verify_api_key)])
 def get_owner(token_id: int):
     """Return current owner for a given tokenId."""
     if not is_valid_token_id(token_id):
         raise HTTPException(422, "Invalid token_id")
     return _wrap_kaleido(owner_of, token_id)
+
 
 @router.get("/uri/{token_id}", dependencies=[Depends(verify_api_key)])
 def get_uri(token_id: int):
@@ -109,6 +114,7 @@ def get_uri(token_id: int):
         raise HTTPException(422, "Invalid token_id")
     return _wrap_kaleido(token_uri, token_id)
 
+
 @router.get("/balance/{owner}/{token_id}", dependencies=[Depends(verify_api_key)])
 def get_balance(owner: str, token_id: int):
     """ERC-1155 balanceOf wrapper."""
@@ -116,12 +122,14 @@ def get_balance(owner: str, token_id: int):
         raise HTTPException(422, "Invalid owner address")
     return _wrap_kaleido(balance_of, to_checksum(owner), token_id)
 
+
 @router.get("/tokens/{owner}", dependencies=[Depends(verify_api_key)])
 def list_tokens(owner: str):
     """List all token IDs held by an address."""
     if not is_valid_eth_address(owner):
         raise HTTPException(422, "Invalid owner address")
     return _wrap_kaleido(tokens_by_owner, to_checksum(owner))
+
 
 @router.post("/transfer", dependencies=[Depends(verify_api_key)])
 def transfer(req: TransferRequest):
@@ -134,5 +142,5 @@ def transfer(req: TransferRequest):
         to_checksum(req.from_address),
         to_checksum(req.to_address),
         req.token_id,
-        req.amount
+        req.amount,
     )
